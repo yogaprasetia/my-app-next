@@ -11,8 +11,6 @@ services:
     restart: unless-stopped
     ports:
       - "4000:3000"
-    volumes:
-      - ./public/uploads:/app/public/uploads
     environment:
       - NODE_ENV=production
     networks:
