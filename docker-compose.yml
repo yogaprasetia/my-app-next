@@ -7,14 +7,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: production
     restart: unless-stopped
     ports:
       - "4000:3000"
     volumes:
       - ./public/uploads:/app/public/uploads
-    command: "npm run start"
+    environment:
+      - NODE_ENV=production
     networks:
       - app-network
+
 networks:
   app-network:
     driver: bridge

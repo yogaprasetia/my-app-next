@@ -8,6 +8,7 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 # Install necessary dependencies for sharp (for image optimization)
 RUN apk add --no-cache libc6-compat
+
 # Stage 2: Development environment
 FROM base AS development
 ARG ENVIRONMENT=development
@@ -24,10 +25,17 @@ RUN npm run build
 # Stage 4: Production runtime environment
 FROM node:18-alpine AS production
 WORKDIR /app
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/package-lock.json ./package-lock.json
+
+# Copy standalone output
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
-COPY --from=build /app/node_modules ./node_modules
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+
+# Use the standalone server
+CMD ["node", "server.js"]
