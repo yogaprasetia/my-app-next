@@ -1,41 +1,25 @@
-# Stage 1: Base build environment
-FROM node:18-alpine AS base
+# Gunakan base image Node.js versi LTS (Long Term Support)
+FROM node:18-alpine
+
+# Tentukan direktori kerja di dalam container
 WORKDIR /app
-COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci --legacy-peer-deps
+# Salin package.json dan package-lock.json terlebih dahulu
+# Ini memanfaatkan cache Docker. Jika file ini tidak berubah,
+# Docker tidak akan meng-install ulang dependensi.
+COPY package*.json ./
+
+# Install dependensi
+RUN npm install
+
+# Salin sisa kode aplikasi Anda
 COPY . .
-# Install necessary dependencies for sharp (for image optimization)
-RUN apk add --no-cache libc6-compat
 
-# Stage 2: Development environment
-FROM base AS development
-ARG ENVIRONMENT=development
-ENV NODE_ENV=$ENVIRONMENT
-EXPOSE 3000
-CMD ["npm", "run", "dev"]
-
-# Stage 3: Production build
-FROM base AS build
-ARG ENVIRONMENT=production
-ENV NODE_ENV=$ENVIRONMENT
+# Build aplikasi Next.js
 RUN npm run build
 
-# Stage 4: Production runtime environment
-FROM node:18-alpine AS production
-WORKDIR /app
-
-# Copy standalone output
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
-COPY --from=build /app/public ./public
-
-# Set environment
-ENV NODE_ENV=production
-ENV PORT=3000
-
+# Expose port yang digunakan Next.js (default 3000)
 EXPOSE 3000
 
-# Use the standalone server
-CMD ["node", "server.js"]
+# Perintah untuk menjalankan aplikasi saat container dimulai
+CMD ["npm", "start"]

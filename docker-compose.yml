@@ -1,21 +1,24 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  nextjs-app:
-    image: digipros-prod
-    container_name: digipros-app
+  next-app:
+    # 'build' akan menginstruksikan Docker untuk membangun image
     build:
-      context: .
+      # 'context' adalah sumber kodenya.
+      # Ganti URL ini dengan URL repo GitHub Anda.
+      # Anda bisa tentukan branch dengan menambahkan #nama-branch (cth: #main)
+      context: https://github.com/yogaprasetia/my-app-next.git#master
+      
+      # 'dockerfile' adalah nama file instruksi build di dalam repo itu
       dockerfile: Dockerfile
-      target: production
-    restart: unless-stopped
-    ports:
-      - "4000:3000"
-    environment:
-      - NODE_ENV=production
-    networks:
-      - app-network
+      
+    # 'image' adalah nama yang akan diberikan ke image setelah di-build
+    image: next-test-app
 
-networks:
-  app-network:
-    driver: bridge
+    # 'ports' memetakan port di server Anda (kiri) ke port di container (kanan)
+    # Format: "HOST:CONTAINER"
+    ports:
+      - "3000:3000"
+      
+    # 'restart' akan otomatis menyalakan container jika mati (kecuali di-stop manual)
+    restart: unless-stopped
